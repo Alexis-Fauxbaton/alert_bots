@@ -1,0 +1,6 @@
+prefect==3.0.4
+investpy==1.0.8
+google-api-python-client==2.147.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+streamlit==1.39.0
