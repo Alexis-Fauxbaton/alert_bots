@@ -73,6 +73,8 @@ def create_events(service):
 
     for _, row in next_news.iterrows():
         print(row['event_datetime'].replace(' ', 'T'))
+        # add 30 mins to event end
+        event_end = (datetime.datetime.strptime(row['event_datetime'], '%Y-%m-%d %H:%M:%S') + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S')
         event = {
             'summary': row['event_name'],
             'location': row['event_zone'],
@@ -83,7 +85,7 @@ def create_events(service):
                 'timeZone': 'Europe/Paris',
             },
             'end': {
-                'dateTime': row['event_datetime'].replace(' ', 'T'),
+                'dateTime': event_end.replace(' ', 'T'),
                 'timeZone': 'Europe/Paris',
             },
         }
