@@ -3,15 +3,7 @@ import investpy
 import json
 import datetime
 import sqlitecloud
-from daily import main
-import subprocess
-
-# start the prefect server but keep a way to stop it
-prefect_server = subprocess.Popen(['prefect', 'server', 'start'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-
-def run_main():
-    main
+from daily import main    
 
 conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
 c = conn.cursor()
