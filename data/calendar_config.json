@@ -1,1 +1,1 @@
-{"countries": ["All"], "currencies": ["USD"], "importances": ["medium", "high"]}
+{"countries": ["All"], "currencies": ["USD"], "importances": ["medium", "high"], "min_time": "08:00:00", "max_time": "18:00:00"}

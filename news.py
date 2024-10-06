@@ -2,6 +2,7 @@
 
 import investpy
 import sqlite3
+import sqlitecloud
 import datetime
 import pandas as pd
 import numpy as np
@@ -19,9 +20,10 @@ curr_date = datetime.datetime.now().date()
 
 # Function to create the database
 @task
-def create_database():
+def create_table():
     # Connect to the database
-    conn = sqlite3.connect('alert_bots.db')
+    # conn = sqlite3.connect('alert_bots.db')
+    conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
     c = conn.cursor()
     
     # Create the economic_calendar table
@@ -50,23 +52,37 @@ def load_calendar_config():
         with open('./data/calendar_config.json', 'r') as f:
             return json.load(f).values()
     except:
-        return ['All'], ['All'], ['All']
+        return ['All'], ['All'], ['All'], datetime.time(0, 0), datetime.time(23, 59)
+
+def load_calendar_config_from_db():
+    conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
+    c = conn.cursor()
+    try:
+        c.execute('''
+            SELECT config FROM calendar_config WHERE u_id = 1
+        ''')
+        return json.loads(c.fetchone()[0]).values()
+    except:
+        return ['All'], ['All'], ['All'], datetime.time(0, 0), datetime.time(23, 59)
 
 # Function to retrieve economic calendar for the upcoming week
 @task
 def get_next_week_calendar():
     # Get the economic calendar for the upcoming week Paris time
-    eow = (curr_date + datetime.timedelta(days=(6 - curr_date.weekday())))
+    # eow = (curr_date + datetime.timedelta(days=(6 - curr_date.weekday())))
+    offset = 7
+    
+    eow = curr_date + datetime.timedelta(days=offset)
         
-    countries, currencies, importances = load_calendar_config()
+    countries, currencies, importances, min_time, max_time = load_calendar_config_from_db()
     
     countries = countries if countries != ['All'] else None
     currencies = currencies if currencies != ['All'] else None
     importances = importances if importances != ['All'] else None
     
-    print(countries, currencies, importances)
+    print(curr_date, eow)
     
-    news = investpy.news.economic_calendar(time_zone='GMT', countries=countries, importances=importances, from_date=curr_date.strftime('%d/%m/%Y'), to_date=eow.strftime('%d/%m/%Y'))
+    news = investpy.news.economic_calendar(time_zone='GMT +2:00', countries=countries, importances=importances, from_date=curr_date.strftime('%d/%m/%Y'), to_date=eow.strftime('%d/%m/%Y'))
     
     # countrie, importances and currencies params are not working in the api call, need to sort through the data by ourselves
     if countries is not None:
@@ -75,14 +91,18 @@ def get_next_week_calendar():
         news = news[news['currency'].isin(currencies)]
     if importances is not None:
         news = news[news['importance'].isin(importances)]
-    
+    print(min_time, max_time)
+    news = news.loc[(news['time'] >= min_time) & (news['time'] <= max_time)]
+        
     news.reset_index(drop=True, inplace=True)
     
     # convert to Europe/Paris time
-    news['datetime'] = pd.to_datetime(pd.to_datetime(news['date'], format='%d/%m/%Y').dt.strftime('%Y-%m-%d') + ' ' + news['time'].str.replace('All Day', '00:00') + ':00').dt.tz_localize('GMT').dt.tz_convert('Europe/Paris').dt.strftime('%Y-%m-%d %H:%M:%S')
+    news['datetime'] = pd.to_datetime(pd.to_datetime(news['date'], format='%d/%m/%Y').dt.strftime('%Y-%m-%d') + ' ' + news['time'].str.replace('All Day', '00:00') + ':00').dt.strftime('%Y-%m-%d %H:%M:%S')
     
     # Connect to the database
-    conn = sqlite3.connect('alert_bots.db')
+    # conn = sqlite3.connect('alert_bots.db')
+    # conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
+    conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
     c = conn.cursor()
     
     # drop all entries in the table from the current date to the end of the week
@@ -117,7 +137,7 @@ if __name__ == '__main__':
     # conn.commit()
     # conn.close()
     
-    # create_database()
+    create_table()
     
     # # Get the economic calendar for the upcoming week
     get_next_week_calendar()

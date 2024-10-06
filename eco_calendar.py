@@ -7,19 +7,25 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import sqlite3
+import sqlitecloud
 import pandas as pd
 
 from prefect import task, flow
 
+conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
+c = conn.cursor()
+
 @task
 def delete_events(service):
-    conn = sqlite3.connect('alert_bots.db')
-    c = conn.cursor()
+    # conn = sqlite3.connect('alert_bots.db')
+    # c = conn.cursor()
     
     curr_date = datetime.datetime.now().date()
     
-    offset = (6 - curr_date.weekday())
-        
+    # offset = (6 - curr_date.weekday())
+    
+    offset = 7
+    
     time_min = datetime.datetime.combine(curr_date, datetime.time.min).isoformat() + 'Z'
     time_max = datetime.datetime.combine((curr_date + datetime.timedelta(days=offset)), datetime.time.max).isoformat() + 'Z'
     
@@ -43,14 +49,16 @@ def delete_events(service):
 @task
 def create_events(service):
     # Connect to the database
-    conn = sqlite3.connect('alert_bots.db')
-    c = conn.cursor()
+    # conn = sqlite3.connect('alert_bots.db')
+    # c = conn.cursor()
     
     curr_date = datetime.datetime.now().date()
     
     # gather upcoming events from the database up to next sunday included in Paris time and format them for Google Calendar
     
-    offset = (6 - curr_date.weekday())
+    # offset = (6 - curr_date.weekday())
+    
+    offset = 7
     
     next_news = c.execute(
         f'''
@@ -112,7 +120,7 @@ def main():
         service = build('calendar', 'v3', credentials=creds)
                 
         delete_events(service)
-        
+                
         events = create_events(service)
 
         events = []
