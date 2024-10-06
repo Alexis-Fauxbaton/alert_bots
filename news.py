@@ -54,10 +54,10 @@ def load_calendar_config_from_db():
     conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
     c = conn.cursor()
     try:
-        c.execute('''
+        d = c.execute('''
             SELECT config FROM calendar_config WHERE u_id = 1
-        ''')
-        return json.loads(c.fetchone()[0]).values()
+        ''').fetchone()[0]
+        return json.loads(d).values()
     except:
         return ['All'], ['All'], ['All'], datetime.time(0, 0), datetime.time(23, 59)
 

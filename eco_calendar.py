@@ -10,13 +10,10 @@ import sqlite3
 import sqlitecloud
 import pandas as pd
 
-conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
-c = conn.cursor()
-
-
 def delete_events(service):
     # conn = sqlite3.connect('alert_bots.db')
-    # c = conn.cursor()
+    conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
+    c = conn.cursor()
     
     curr_date = datetime.datetime.now().date()
     
@@ -48,7 +45,8 @@ def delete_events(service):
 def create_events(service):
     # Connect to the database
     # conn = sqlite3.connect('alert_bots.db')
-    # c = conn.cursor()
+    conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
+    c = conn.cursor()
     
     curr_date = datetime.datetime.now().date()
     
