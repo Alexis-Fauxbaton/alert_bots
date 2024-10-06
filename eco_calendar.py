@@ -10,12 +10,10 @@ import sqlite3
 import sqlitecloud
 import pandas as pd
 
-from prefect import task, flow
-
 conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
 c = conn.cursor()
 
-@task
+
 def delete_events(service):
     # conn = sqlite3.connect('alert_bots.db')
     # c = conn.cursor()
@@ -46,7 +44,7 @@ def delete_events(service):
         print(f"deleting event: {event['summary']}")
         service.events().delete(calendarId='primary', eventId=event['id']).execute()
 
-@task
+
 def create_events(service):
     # Connect to the database
     # conn = sqlite3.connect('alert_bots.db')
@@ -99,7 +97,7 @@ def create_events(service):
     return next_news
         
 
-@flow
+
 def main():
     creds = None
     SCOPES = ['https://www.googleapis.com/auth/calendar']

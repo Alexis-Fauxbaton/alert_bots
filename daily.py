@@ -1,8 +1,6 @@
 from news import get_next_week_calendar, create_table
 from eco_calendar import main as update_calendar
-from prefect import flow
 
-@flow
 def main():
     create_table()
     get_next_week_calendar()

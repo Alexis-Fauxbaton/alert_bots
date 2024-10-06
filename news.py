@@ -6,9 +6,6 @@ import sqlitecloud
 import datetime
 import pandas as pd
 import numpy as np
-import os
-import time
-from prefect import task, flow
 import json
 
 curr_date = datetime.datetime.now().date()
@@ -19,7 +16,6 @@ curr_date = datetime.datetime.now().date()
 # Columns: event_date, event_time, event_name, event_country, event_importance, event_actual, event_forecast, event_previous
 
 # Function to create the database
-@task
 def create_table():
     # Connect to the database
     # conn = sqlite3.connect('alert_bots.db')
@@ -66,7 +62,6 @@ def load_calendar_config_from_db():
         return ['All'], ['All'], ['All'], datetime.time(0, 0), datetime.time(23, 59)
 
 # Function to retrieve economic calendar for the upcoming week
-@task
 def get_next_week_calendar():
     # Get the economic calendar for the upcoming week Paris time
     # eow = (curr_date + datetime.timedelta(days=(6 - curr_date.weekday())))
