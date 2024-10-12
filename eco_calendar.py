@@ -9,6 +9,7 @@ from googleapiclient.errors import HttpError
 import sqlite3
 import sqlitecloud
 import pandas as pd
+import tempfile
 
 def delete_events(service):
     # conn = sqlite3.connect('alert_bots.db')
@@ -123,9 +124,12 @@ def main():
     ''')
     token = c.fetchone()
     
-    if token:
-        creds = Credentials.from_authorized_user_info(token[0])
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp.write(token[0].encode())
+    temp.close()
     
+    if token:
+        creds = Credentials.from_authorized_user_file(temp.name)
         
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
