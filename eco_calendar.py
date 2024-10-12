@@ -102,8 +102,30 @@ def main():
     creds = None
     SCOPES = ['https://www.googleapis.com/auth/calendar']
     
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json')
+    # if os.path.exists('token.json'):
+    #     creds = Credentials.from_authorized_user_file('token.json')
+    
+    # read the token from database
+    
+    conn = sqlitecloud.connect('sqlitecloud://cq8ymfazhk.sqlite.cloud:8860/alert_bots?apikey=BeK74nihl8qWNYShYmbJ584DknSnaH2Bi49Nui2OQvE')
+    c = conn.cursor()
+    
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS google_calendar_token
+        (
+            u_id INTEGER PRIMARY KEY UNIQUE,
+            token TEXT
+        )
+    ''')
+
+    c.execute('''
+        SELECT token FROM google_calendar_token WHERE u_id = 1
+    ''')
+    token = c.fetchone()
+    
+    if token:
+        creds = Credentials.from_authorized_user_info(token[0])
+    
         
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -111,8 +133,12 @@ def main():
         else:
             flow = InstalledAppFlow.from_client_secrets_file('./utils/googleapi_credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+        # with open('token.json', 'w') as token:
+        #     token.write(creds.to_json())
+        
+        # save the token to the database
+        c.execute('''DELETE FROM google_calendar_token WHERE u_id = 1''')
+        c.execute('''INSERT INTO google_calendar_token (u_id, token) VALUES (1, ?)''', (creds.to_json(),))
             
     try:
         service = build('calendar', 'v3', credentials=creds)
